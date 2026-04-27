@@ -1,0 +1,24 @@
+# Core data
+pandas>=2.0,<4.0
+numpy>=1.26,<3.0
+
+# Machine learning
+scikit-learn==1.6.1
+xgboost>=2.0
+joblib==1.5.3
+
+# Optimization
+pulp>=2.8
+
+# Visualization (notebooks)
+matplotlib>=3.7
+seaborn>=0.13
+
+# Web app
+streamlit>=1.40
+fastapi>=0.110
+uvicorn>=0.29
+requests>=2.31
+
+# Testing
+pytest>=8.0

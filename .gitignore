@@ -1,0 +1,16 @@
+# Ignore datasets
+data/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore models
+*.joblib
+
+# Ignore outputs
+outputs/
+
+# Ignore virtual environment
+venv/
+.venv/
