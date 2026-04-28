@@ -1,176 +1,240 @@
-# 🎓 Performance-Aware Course Recommender
+# Performance-Aware Course Recommender
 
-A data-driven academic decision-support system designed to help students select an optimal course load by balancing ambition with realistic performance expectations. The system integrates machine learning, behavioral analytics, and mathematical optimization to deliver personalized and explainable recommendations.
-
----
-
-## 🌟 Overview
-
-The **Performance-Aware Course Recommender** combines predictive modeling with optimization techniques to recommend course combinations that maximize academic success while respecting real-world constraints such as credit limits and prerequisites.
-
-The system leverages historical academic data and behavioral signals to provide insights into:
-- Expected performance  
-- Dropout risk  
-- GPA impact  
+A data-driven academic decision-support system that helps students select an optimal course load by balancing ambition with realistic performance expectations. The system integrates machine learning, behavioral analytics, and mathematical optimization to deliver personalized, explainable recommendations.
 
 ---
 
-## 🚀 Key Features
+## Overview
 
-### 🎯 Optimization-Driven Recommendations
-- Implements **Integer Linear Programming (ILP)** using :contentReference[oaicite:0]{index=0}  
-- Maximizes a composite *Fit Score* subject to:
-  - Credit constraints  
-  - Prerequisite satisfaction  
-  - Risk thresholds  
+The recommender combines predictive modeling with constrained optimization to suggest course combinations that maximize academic success while respecting real-world constraints such as credit limits and prerequisites.
 
-### 📈 Predictive Analytics
-- **Grade Prediction**
-  - Built using :contentReference[oaicite:1]{index=1}  
-  - Estimates grades based on:
-    - Student history  
-    - Course difficulty  
-
-- **Persistence Modeling**
-  - Predicts probability of course withdrawal  
-  - Uses behavioral signals such as:
-    - Click velocity  
-    - Assignment submission patterns  
-
-### 📊 Student Engagement Profiling
-- Categorizes students into behavioral archetypes:
-  - *Ghost* → *Deeply Engaged*  
-- Profiles dynamically adjust:
-  - Risk scores  
-  - Recommendation confidence  
-
-### 🕸️ Prerequisite Validation Engine
-- Graph-based validation system  
-- Automatically:
-  - Checks eligibility  
-  - Explains missing prerequisites  
-
-### 📉 GPA Projection
-- Real-time cumulative GPA estimation  
-- Based on predicted grades of recommended courses  
+Given a student's academic history and engagement profile, the system outputs a ranked list of courses with predicted grades, dropout risk scores, prerequisite status, and a projected cumulative GPA for the semester.
 
 ---
 
-## 🛠️ Technology Stack
+## Key Features
 
-| Layer | Tools |
-|------|------|
-| **Frontend** | :contentReference[oaicite:2]{index=2} |
-| **Backend API** | :contentReference[oaicite:3]{index=3}, :contentReference[oaicite:4]{index=4} |
-| **Core Logic** | Python 3.10+, :contentReference[oaicite:5]{index=5}, :contentReference[oaicite:6]{index=6} |
-| **Machine Learning** | :contentReference[oaicite:7]{index=7}, :contentReference[oaicite:8]{index=8} |
-| **Optimization** | :contentReference[oaicite:9]{index=9} (COIN-OR CBC solver) |
+- **ILP-based optimization**: Uses Integer Linear Programming (via PuLP/CBC) to select the globally optimal course combination under credit and prerequisite constraints, rather than a simple top-N ranking.
+- **Grade prediction**: XGBoost regression model trained on 11 years of UW Madison grade distributions, incorporating course difficulty, instructor leniency, and student academic history.
+- **Dropout risk modeling**: XGBoost classifier trained on OULAD behavioral data. Predicts withdrawal probability from early-semester engagement signals (VLE clicks, submission rates, activity patterns).
+- **Prerequisite validation**: Graph-based eligibility checker that synthesizes prerequisite relationships from course numbering conventions and name patterns, then validates a student's transcript before recommending any course.
+- **Engagement profiling**: Categorizes students into behavioral archetypes (Ghost → Deeply Engaged) calibrated against OULAD population percentiles, used to adjust grade predictions and risk scores.
+- **GPA projection**: Estimates cumulative GPA impact of the recommended course load using credit-weighted averaging.
 
 ---
 
-## 📁 Project Structure
+## Datasets
 
-```text
+The datasets are not included in this repository due to size. Download them and place them in the directory structure shown below before running the project.
+
+### UW Madison Courses & Grades (2006–2017)
+Source: [Kaggle — UW Madison Courses and Grades](https://www.kaggle.com/datasets/Madgrades/uw-madison-courses)
+
+Download and extract into:
+```
+data/
+└── uw_madison/
+    ├── courses.csv
+    ├── course_offerings.csv
+    ├── grade_distributions.csv
+    ├── instructors.csv
+    ├── sections.csv
+    ├── subjects.csv
+    ├── subject_memberships.csv
+    ├── teachings.csv
+    ├── schedules.csv
+    └── rooms.csv
+```
+
+### Open University Learning Analytics Dataset (OULAD)
+Source: [Open University — OULAD](https://analyse.kmi.open.ac.uk/open-dataset)
+
+Download and extract into:
+```
+data/
+└── oulad/
+    ├── courses.csv
+    ├── assessments.csv
+    ├── studentInfo.csv
+    ├── studentRegistration.csv
+    ├── studentAssessment.csv
+    ├── vle.csv
+    └── studentVle.csv
+```
+
+---
+
+## Project Structure
+
+```
 CourseRecommender/
 ├── app/
-│   ├── backend/          # FastAPI endpoints, schemas, and business logic
-│   └── frontend/         # Streamlit UI and interaction layer
-├── modules/              # Trained models, encoders, and graph utilities
-├── data/                 # Raw and processed datasets
-├── notebooks/            # EDA and model experimentation
-├── optimizer.py          # Core optimization and scoring logic
-└── requirements.txt      # Dependency manifest
-````
+│   ├── backend/
+│   │   ├── main.py           # FastAPI app, /recommend endpoint
+│   │   └── schemas.py        # Pydantic request/response models
+│   └── frontend/
+│       └── app.py            # Streamlit UI
+├── modules/
+│   ├── grade_model.joblib        # Trained XGBRegressor
+│   ├── dropout_model.joblib      # Trained XGBClassifier
+│   ├── subject_encoder.joblib    # LabelEncoder for subjects
+│   └── term_map.json             # Term code → index mapping
+├── data/
+│   ├── uw_madison/           # UW Madison dataset (not tracked — see Datasets)
+│   └── oulad/                # OULAD dataset (not tracked — see Datasets)
+├── notebooks/
+│   ├── GradeDifficulty.ipynb     # Grade model training and EDA
+│   └── DropoutEngagementRisk.ipynb  # Dropout model training and EDA
+├── outputs/
+│   ├── course_catalog.csv        # Generated by GradeDifficulty.ipynb
+│   ├── course_catalog_clean.csv  # Generated by prepare_catalog.py
+│   ├── course_difficulty.csv
+│   ├── instructor_leniency.csv
+│   └── student_features.csv
+├── optimizer.py              # Scoring, prediction, and ILP/greedy optimizer
+├── prereq_module.py          # Prerequisite graph construction and eligibility checker
+├── prepare_catalog.py        # Cleans and standardizes the course catalog
+└── requirements.txt
+```
+
 ---
 
-## ⚙️ Setup & Installation
+## Setup & Installation
 
 ### Prerequisites
 
-* Python 3.9 or higher
-* pip (Python package manager)
+- Python 3.9 or higher
+- pip
 
-### Installation
-
-1. Clone the repository:
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/your-username/CourseRecommender.git
 cd CourseRecommender
 ```
 
-2. (Optional but recommended) Create a virtual environment:
+### 2. Create a virtual environment (recommended)
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate      # On macOS/Linux
-.venv\Scripts\activate         # On Windows
+source .venv/bin/activate       # macOS / Linux
+.venv\Scripts\activate          # Windows
 ```
 
-3. Install dependencies:
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
+### 4. Download datasets
+
+Follow the instructions in the [Datasets](#datasets) section above. Place the files in `data/uw_madison/` and `data/oulad/` respectively.
+
+### 5. Run the training notebooks
+
+Open and run both notebooks in order — they generate the trained model files and output CSVs that the app depends on:
+
+```
+notebooks/GradeDifficulty.ipynb
+notebooks/DropoutEngagementRisk.ipynb
+```
+
+### 6. Prepare the course catalog
+
+```bash
+python prepare_catalog.py
+```
+
+This generates `outputs/course_catalog_clean.csv`, which the backend loads at startup.
+
 ---
 
-## ▶️ Running the Application
+## Running the Application
 
-### Step 1: Start Backend API
+### Start the backend API
 
 ```bash
 uvicorn app.backend.main:app --reload
 ```
 
-### Step 2: Launch Frontend Dashboard
+The API will be available at `http://localhost:8000`. You can verify it's running at `http://localhost:8000/health`.
+
+### Launch the frontend
 
 ```bash
-streamlit run app.frontend.app.py
+streamlit run app/frontend/app.py
 ```
----
-
-## 🔄 System Workflow
-
-1. User inputs academic and engagement data via the frontend
-2. Backend processes:
-
-   * Feature engineering
-   * Model inference (grade + persistence)
-3. Optimization engine selects best course combination
-4. Results returned with:
-
-   * Recommended courses
-   * Predicted grades
-   * GPA projection
-   * Risk indicators
 
 ---
 
-## 🧠 Design Principles
+## How It Works
 
-* **Explainability**
-  Transparent recommendations with constraint reasoning
-
-* **Personalization**
-  Tailored using both academic and behavioral signals
-
-* **Practicality**
-  Balances ambition with achievable outcomes
+1. A student submits their profile via the frontend — GPA, credit history, engagement signals, completed courses, and optionally a target GPA and subject preferences.
+2. The backend filters the course catalog to eligible courses (prerequisites satisfied, not already completed, level-appropriate).
+3. For each candidate, the system predicts an expected grade and withdrawal risk using the trained ML models.
+4. A composite fit score is computed: `0.5 × predicted_grade + 0.3 × (1 − withdrawal_risk) − 0.2 × difficulty`, with additional bonuses for courses that represent the ideal next step in the student's academic progression.
+5. The ILP optimizer selects the combination of courses that maximizes total fit score without exceeding the credit limit.
+6. Results are returned with predicted grades, risk scores, prerequisite status, plain-language rationale, and a projected cumulative GPA.
 
 ---
 
-## 📌 Use Cases
+## API Reference
 
-* Student academic planning
-* Advisor decision support systems
-* Early identification of at-risk students
-* GPA forecasting and performance optimization
+### `POST /recommend`
+
+Returns a ranked list of recommended courses for a given student profile.
+
+**Request body:**
+```json
+{
+  "student_profile": {
+    "gpa": 3.2,
+    "studied_credits": 60,
+    "clicks_first_2weeks": 150,
+    "click_velocity": 1.4,
+    "zero_activity_days": 3,
+    "assessment_submission_rate": 0.9,
+    "num_of_prev_attempts": 0
+  },
+  "transcript": [
+    { "course_id": "abc-123", "grade": "B", "completed": true }
+  ],
+  "max_credits": 15,
+  "n_recommendations": 5,
+  "method": "ilp",
+  "target_gpa": 3.5,
+  "subject_filter": ["Computer Sciences", "Mathematics"]
+}
+```
+
+**Response:** Ranked course list with `predicted_grade`, `withdrawal_risk`, `score`, `prerequisite_explanation`, `reason`, and `projected_final_gpa`.
+
+### `GET /subjects`
+
+Returns the list of available subjects for filtering.
+
+### `GET /health`
+
+Returns server status and number of courses loaded.
 
 ---
 
-## 📄 Acknowledgment
+## Technology Stack
 
-Developed as part of the **CS F320: Course Recommendation System Project**.
+| Layer | Tools |
+|---|---|
+| Frontend | Streamlit |
+| Backend API | FastAPI, Uvicorn |
+| Machine Learning | XGBoost, scikit-learn |
+| Optimization | PuLP (COIN-OR CBC solver) |
+| Data processing | pandas, numpy |
+| Model persistence | joblib |
 
 ---
+
+## Acknowledgment
+
+Developed as part of **CS F320: Course Recommendation System Project**
+
+Datasets: UW Madison Courses & Grades (Kaggle / Madgrades) and Open University Learning Analytics Dataset (OULAD).
