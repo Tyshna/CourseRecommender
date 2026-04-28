@@ -247,6 +247,7 @@ if st.button("Get Recommendations", type="primary", use_container_width=True):
             data = res.json()
             recs = data["recommendations"]
             projected_gpa = data["projected_final_gpa"]
+            projected_sem_gpa = data.get("projected_semester_gpa", 0.0)
             eng_prof = data.get("engagement_profile", {"score": 3, "label": "Moderate"})
 
 
@@ -308,6 +309,23 @@ if st.button("Get Recommendations", type="primary", use_container_width=True):
                     c2.success(f"On track to reach your target of {target_gpa:.2f}!")
                 else:
                     c2.info(f"Aiming for {target_gpa:.2f}. These recommendations maximize your chances.")
+
+                # ── STUDY HABIT SUGGESTION ──────────────────────
+                midpoint = (gpa + target_gpa) / 2
+                if projected_sem_gpa < midpoint:
+                    st.markdown("---")
+                    with st.container(border=True):
+                        st.markdown("### 💡 Academic Performance Tip")
+                        st.write(
+                            "Based on your current engagement levels and course selection, "
+                            "your predicted semester performance is lower than the midpoint "
+                            "of your current and target GPA."
+                        )
+                        st.info(
+                            "**Suggestion:** Try changing your study habits or engagement behavior "
+                            "(e.g., increasing your click velocity or submission rate) to score better "
+                            "and bridge the gap towards your target!"
+                        )
 
 
         except requests.exceptions.ConnectionError:

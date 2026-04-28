@@ -464,6 +464,8 @@ def recommend_courses(student_profile, transcript, catalog_df,
     recs_grade_points = sum(row["predicted_grade"] * row["credits"] for _, row in selected.iterrows())
     recs_credits = sum(row["credits"] for _, row in selected.iterrows())
     
+    projected_sem_gpa = recs_grade_points / recs_credits if recs_credits > 0 else 0.0
+
     total_credits = current_credits + recs_credits
     if total_credits > 0:
         # Cumulative = (Total Past Points + Predicted New Points) / Total Credits
@@ -471,7 +473,7 @@ def recommend_courses(student_profile, transcript, catalog_df,
     else:
         projected_gpa = current_gpa
         
-    return selected, projected_gpa
+    return selected, projected_gpa, projected_sem_gpa
 
 
 

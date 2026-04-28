@@ -47,5 +47,6 @@ class CourseRecommendation(BaseModel):
 class RecommendResponse(BaseModel):
     recommendations: List[CourseRecommendation]
     projected_final_gpa: float
+    projected_semester_gpa: float
     engagement_profile: Optional[EngagementProfile] = None
 

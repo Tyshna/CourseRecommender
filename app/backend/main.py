@@ -41,7 +41,7 @@ def recommend(req: RecommendRequest):
     profile_dict["subject_filter"] = req.subject_filter
     transcript = [c.dict() for c in req.transcript]
 
-    recs_df, projected_gpa = recommend_courses(
+    recs_df, projected_gpa, projected_sem_gpa = recommend_courses(
         student_profile=profile_dict,
         transcript=transcript,
         catalog_df=CATALOG_DF,
@@ -59,6 +59,7 @@ def recommend(req: RecommendRequest):
         return {
             "recommendations": [], 
             "projected_final_gpa": req.student_profile.gpa,
+            "projected_semester_gpa": 0.0,
             "engagement_profile": engagement_prof
         }
 
@@ -80,6 +81,7 @@ def recommend(req: RecommendRequest):
     return {
         "recommendations": recommendations, 
         "projected_final_gpa": float(projected_gpa),
+        "projected_semester_gpa": float(projected_sem_gpa),
         "engagement_profile": engagement_prof
     }
 
